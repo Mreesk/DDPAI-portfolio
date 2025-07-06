@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Nutrition Search | Side-by-Side</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-start: #6a85b6;
+            --background-end: #bac8e0;
+            --container-bg: rgba(255, 255, 255, 0.2);
+            --text-color: #2c3e50;
+            --primary-color: #5c67f2;
+            --primary-hover: #4a54e1;
+            --secondary-color: #f85c70;
+            --secondary-hover: #f73b54;
+            --border-color: rgba(255, 255, 255, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 2px 4px var(--shadow-color);
+            margin-bottom: 0;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            position: relative;
+            justify-content: center;
+        }
+
+        #search-input {
+            width: 50%;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            background-color: var(--container-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        #search-input::placeholder {
+            color: rgba(44, 62, 80, 0.7);
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        #search-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #search-button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        
+        #clear-button {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        #clear-button:hover {
+            background-color: var(--secondary-hover);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            gap: 20px;
+            min-height: 0;
+        }
+
+        #results-container, #nutrition-container {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            overflow-y: auto;
+            flex-basis: 50%;
+        }
+        
+        #results-container.visible, #nutrition-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            position: sticky;
+            top: -25px;
+            background: var(--container-bg);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .product-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .product-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        .nutrition-header {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nutrition-header img {
+            max-width: 100px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .nutrition-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .nutrition-table th, .nutrition-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nutrition-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .error {
+            color: var(--secondary-color);
+            font-weight: 400;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+
+        .visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>Nutrition Finder</h1>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search for a food... (e.g., Nutella)">
+            <button id="search-button">Search</button>
+            <button id="clear-button" class="hidden">Clear</button>
+        </div>
+        
+        <div class="main-content">
+            <div id="results-container" class="hidden">
+                <h2>Search Results</h2>
+                <div id="results-list"></div>
+            </div>
+            
+            <div id="nutrition-container" class="hidden">
+                <h2>Nutrition Information</h2>
+                <div id="nutrition-data"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const clearButton = document.getElementById('clear-button');
+        const resultsContainer = document.getElementById('results-container');
+        const resultsList = document.getElementById('results-list');
+        const nutritionContainer = document.getElementById('nutrition-container');
+        const nutritionData = document.getElementById('nutrition-data');
+
+        // Event Listeners
+        searchButton.addEventListener('click', searchProducts);
+        clearButton.addEventListener('click', clearSearch);
+
+        let debounceTimer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            if (searchInput.value.trim() === '') {
+                hideContainers();
+                return;
+            }
+            debounceTimer = setTimeout(searchProducts, 500);
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(debounceTimer);
+                searchProducts();
+            }
+        });
+        
+        function showContainer(container) {
+            container.classList.remove('hidden');
+            setTimeout(() => container.classList.add('visible'), 10);
+        }
+        
+        function hideContainer(container) {
+            container.classList.remove('visible');
+             // We can hide it faster as we don't need to see it animate out
+            container.classList.add('hidden');
+        }
+        
+        function hideContainers() {
+            hideContainer(resultsContainer);
+            hideContainer(nutritionContainer);
+            clearButton.classList.add('hidden');
+        }
+
+        function searchProducts() {
+            const searchTerm = searchInput.value.trim();
+            
+            if (!searchTerm) {
+                hideContainers();
+                return;
+            }
+            
+            resultsList.innerHTML = '<div class="loading">Searching...</div>';
+            hideContainer(nutritionContainer);
+            showContainer(resultsContainer);
+            
+            const searchUrl = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchTerm)}&search_simple=1&action=process&json=1`;
+            
+            fetch(searchUrl)
+                .then(response => response.ok ? response.json() : Promise.reject(`HTTP error! Status: ${response.status}`))
+                .then(data => {
+                    displaySearchResults(data);
+                    clearButton.classList.remove('hidden');
+                })
+                .catch(error => {
+                    showError(resultsList, `Error: ${error}`);
+                });
+        }
+
+        function displaySearchResults(data) {
+            resultsList.innerHTML = '';
+            if (!data.products || data.products.length === 0) {
+                showError(resultsList, "No products found.");
+                return;
+            }
+            
+            data.products.slice(0, 20).forEach(product => { // Limit to 20 results
+                const productItem = document.createElement('div');
+                productItem.className = 'product-item';
+                
+                const productName = product.product_name || 'Unknown Product';
+                productItem.innerHTML = `<strong>${productName}</strong>`;
+                if(product.brands) {
+                    productItem.innerHTML += `<div style="font-size: 0.9em; opacity: 0.7;">${product.brands}</div>`
+                }
+                
+                productItem.addEventListener('click', () => fetchNutritionData(product.code, productName));
+                resultsList.appendChild(productItem);
+            });
+        }
+
+        function fetchNutritionData(barcode, productName) {
+            if (!barcode) {
+                showError(nutritionData, "Product barcode not available.");
+                showContainer(nutritionContainer);
+                return;
+            }
+            
+            nutritionData.innerHTML = '<div class="loading">Fetching details...</div>';
+            showContainer(nutritionContainer);
+            
+            const detailsUrl = `https://world.openfoodfacts.net/api/v2/product/${encodeURIComponent(barcode)}?fields=product_name,nutriscore_data,nutriments,image_front_url,brands`;
+            
+            fetch(detailsUrl)
+                .then(response => response.ok ? response.json() : Promise.reject(`HTTP error! Status: ${response.status}`))
+                .then(data => displayNutritionData(data, productName))
+                .catch(error => showError(nutritionData, `Error: ${error}`));
+        }
+
+        function displayNutritionData(data, fallbackName) {
+            nutritionData.innerHTML = '';
+            
+            if (!data.product || (!data.product.nutriments && !data.product.nutriscore_data)) {
+                showError(nutritionData, "Nutrition data is not available.");
+                return;
+            }
+            
+            const product = data.product;
+            const nutriments = product.nutriments || {};
+            
+            const productName = product.product_name || fallbackName;
+            const productBrand = product.brands || '';
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'nutrition-header';
+            headerDiv.innerHTML = `
+                ${product.image_front_url ? `<img src="${product.image_front_url}" alt="${productName}">` : ''}
+                <div>
+                    <h3>${productName}</h3>
+                    ${productBrand ? `<p style="opacity: 0.8; margin: -5px 0 10px 0;">${productBrand}</p>` : ''}
+                </div>
+            `;
+            nutritionData.appendChild(headerDiv);
+            
+            const table = document.createElement('table');
+            table.className = 'nutrition-table';
+            table.innerHTML = `<thead><tr><th>Nutrient</th><th>Value per 100g</th></tr></thead>`;
+            
+            const tbody = document.createElement('tbody');
+            const nutrientsToDisplay = [
+                { key: 'energy-kcal', label: 'Calories' }, { key: 'fat', label: 'Fat' },
+                { key: 'saturated-fat', label: 'Saturated Fat' }, { key: 'carbohydrates', label: 'Carbohydrates' },
+                { key: 'sugars', label: 'Sugars' }, { key: 'proteins', label: 'Proteins' },
+                { key: 'salt', label: 'Salt' }, { key: 'fiber', label: 'Fiber' }
+            ];
+            
+            let hasData = false;
+            nutrientsToDisplay.forEach(nutrient => {
+                const value = nutriments[nutrient.key];
+                const unit = nutriments[nutrient.key + '_unit'] || (nutrient.key.includes('energy') ? 'kcal' : 'g');
+                
+                if (value !== undefined) {
+                    hasData = true;
+                    tbody.innerHTML += `<tr><td>${nutrient.label}</td><td>${parseFloat(value).toFixed(2)} ${unit}</td></tr>`;
+                }
+            });
+            
+            if (!hasData) {
+                showError(nutritionData, "Detailed nutrition data not available.");
+                return;
+            }
+            
+            table.appendChild(tbody);
+            nutritionData.appendChild(table);
+            
+            if (product.nutriscore_data?.grade) {
+                nutritionData.innerHTML += `<p style="margin-top: 20px;"><strong>Nutri-Score: </strong><span style="text-transform: uppercase; font-weight: 600;">${product.nutriscore_data.grade}</span></p>`;
+            }
+        }
+
+        function showError(container, message) {
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            hideContainers();
+        }
+    </script>
+</body>
+</html>
